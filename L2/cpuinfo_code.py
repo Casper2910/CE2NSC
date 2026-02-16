@@ -1,5 +1,5 @@
 import psutil
-from cpuinfo import get_cpu_info
+from L2.cpuinfo_code import get_cpu_info
 
 def bytes_to_mb(x):
     return f"{x / (1024 ** 2):.1f} MB"
