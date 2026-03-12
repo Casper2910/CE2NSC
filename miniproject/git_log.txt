@@ -1,3 +1,14 @@
+2026-03-12 8037bfd cleanup
+
+ ...oject NSC step 1.pdf => Mini project NSC step 1.pdf | Bin
+ ..._26_Mandelbrot_Set.pdf => NSC_26_Mandelbrot_Set.pdf | Bin
+ miniproject.zip                                        | Bin 0 -> 791730 bytes
+ miniproject/miniproject.py                             |   9 ---------
+ 4 files changed, 9 deletions(-)
+2026-03-12 a960a25 git log
+
+ miniproject/git_log.txt | 118 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 118 insertions(+)
 2026-03-12 771bbff report and jupyter in pdf
 
  miniproject/Mini project NSC step 1.pdf | Bin 0 -> 499864 bytes
