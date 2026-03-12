@@ -1,0 +1,118 @@
+2026-03-12 771bbff report and jupyter in pdf
+
+ miniproject/Mini project NSC step 1.pdf | Bin 0 -> 499864 bytes
+ miniproject/miniproject.pdf             | Bin 0 -> 410816 bytes
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+2026-03-12 703056e benchmark and plot of benchmarks
+
+ miniproject/benchmarks.csv    |  13 +++
+ miniproject/miniproject.ipynb | 214 +++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 195 insertions(+), 32 deletions(-)
+2026-03-11 8d9bd5a test terminated successfully: but print is wrong: only max iter of 100 for each test
+
+ miniproject/miniproject.ipynb | 146 +++++++++++++++++++++++++++---------------
+ 1 file changed, 94 insertions(+), 52 deletions(-)
+2026-03-11 de9ea66 comparison of solutions start
+
+ miniproject/miniproject.ipynb | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+2026-03-05 70ff8a8 njit (numba) utilization
+
+ miniproject/miniproject.ipynb | 137 ++++++++++++++++++++++++++++++++++++++++--
+ miniproject/miniproject.py    |   9 +++
+ 2 files changed, 142 insertions(+), 4 deletions(-)
+2026-03-05 b3b376e vectorized version using mask
+
+ miniproject/miniproject.ipynb | 84 ++++++++++++++++++++++++++++---------------
+ 1 file changed, 55 insertions(+), 29 deletions(-)
+2026-03-04 cffffae working on vectorized solution
+
+ miniproject/miniproject.ipynb | 73 +++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 71 insertions(+), 2 deletions(-)
+2026-03-02 9629ab1 fixed correct function call
+
+ miniproject/miniproject.ipynb | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+2026-03-02 3eb9027 new test run
+
+ L3/MonteCarlo.ipynb | 30 ++++++++++++++----------------
+ 1 file changed, 14 insertions(+), 16 deletions(-)
+2026-02-27 a9bfd17 first iteration of mandebrot
+
+ miniproject/miniproject.ipynb | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+2026-02-27 df867f5 first works on mandelbrot
+
+ miniproject/miniproject.ipynb | 32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
+2026-02-27 b5592f3 first parts of miniproject
+
+ miniproject/miniproject.ipynb | 106 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 106 insertions(+)
+2026-02-23 283f37d monteCarlo works
+
+ L3/MonteCarlo.ipynb | 189 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ L3/MonteCarlo.py    |  34 ++++++++--
+ 2 files changed, 218 insertions(+), 5 deletions(-)
+2026-02-23 902653f exercise2
+
+ L2/exercise2.ipynb | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+2026-02-23 7549980 monte carlo
+
+ L3/MonteCarlo.py | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+2026-02-23 d9328fb unrolled with numba
+
+ L2/exercises.ipynb | 82 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 79 insertions(+), 3 deletions(-)
+2026-02-23 b3d7c53 reqs
+
+ requirements.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+2026-02-23 1ec0057 reqs
+
+ requirements.txt | 1 -
+ 1 file changed, 1 deletion(-)
+2026-02-23 78ffeb8 reqs
+
+ requirements.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+2026-02-23 d711481 miniproject desc
+
+ miniproject/NSC_26_Mandelbrot_Set.pdf | Bin 0 -> 1749113 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+2026-02-16 17692d8 work on lecture 2
+
+ L2/Lecture_2_code.ipynb    | 728 +++++++++++++++++++++++++++++++++++++++++++++
+ L2/exercise1.py            |  52 ++++
+ L2/exercises.ipynb         |  75 +++++
+ L2/timing.ipynb            |  10 +
+ miniproject/miniproject.py |   0
+ requirements.txt           |   7 +-
+ 6 files changed, 870 insertions(+), 2 deletions(-)
+2026-02-16 699b0d7 work
+
+ L2/__pycache__/cpuinfo.cpython-312.pyc | Bin 0 -> 1777 bytes
+ L2/{cpuinfo.py => cpuinfo_code.py}     |   2 +-
+ L2/timing.ipynb                        | 175 +++++++++++++++++++++++++++++++++
+ L2/timing.py                           |  42 ++++++++
+ requirements.txt                       |  31 ++++++
+ 5 files changed, 249 insertions(+), 1 deletion(-)
+2026-02-16 68cd852 work
+
+ requirements.txt | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+2026-02-16 56da574 cpuinfo
+
+ L2/{exercise.py => cpuinfo.py} | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+2026-02-16 a3225b4 cpuinfo
+
+ L2/exercise.py | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+2026-02-16 a3963b6 hello world
+
+ .gitignore     | 1 +
+ L2/exercise.py | 0
+ 2 files changed, 1 insertion(+)
