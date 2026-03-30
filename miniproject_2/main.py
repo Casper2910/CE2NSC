@@ -11,4 +11,5 @@ results_njit =      timeit.repeat(lambda: mandelbrot.njit(), number=1, repeat=10
 
 # Miniproject 2 implementations tests:
 results_dask =      timeit.repeat(lambda: mandelbrot.dask(), number=1, repeat=10)
-results_paralel =      timeit.repeat(lambda: mandelbrot.paralel(), number=1, repeat=10)
+results_paralel =   timeit.repeat(lambda: mandelbrot.paralel(), number=1, repeat=10)
+
