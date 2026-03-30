@@ -2,7 +2,7 @@ import numpy as np
 from numba import njit
 import dask
 import threading
-
+import dask.array as da
 
 class Mandelbrot:
 
@@ -75,7 +75,7 @@ class Mandelbrot:
         return array
     
     @njit
-    def mandlebrot_naive(self):
+    def mandlebrot_njit(self):
         array = self.array
         for i in range(self.height):
             for j in range(self.width):
@@ -103,10 +103,44 @@ class Mandelbrot:
         return array
     
     def mandelbroot_paralel(self):
-        d = 2
+        print('not implemented')
+        return None
 
     def mandelbroot_dask(self):
-        nothing = 2
+        
+        array = self.array
+        # 3. For each point c in grid (perform operation on each element in array):
+        # note to self: 1j is imaginary unit in python
+        c = self.x_values[None, :] + 1j * self.y_values[:, None]
+        
+        # > Initialize 𝑧0 = 0 (for all points) (complex256 to prevent overflow of z)
+        z = np.zeros_like(c)
+        
+        # mask to keep track on updated indexes
+        mask = np.ones(c.shape, dtype=bool)
+
+        # Convert to dask arrays for parallel chunk processing
+        z = da.from_array(z, chunks='auto')
+        c = da.from_array(c, chunks='auto')
+        mask = da.from_array(mask, chunks='auto')
+        
+        # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
+        for n in range(self.max_iter):
+            
+            # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
+            z = da.where(mask, z**2 + c, z)
+            
+            # > If 𝑧𝑛+1 >2: Point escapes! Store 𝑛 
+            escaped = da.abs(z) > 2
+            newly_escaped = escaped & mask
+            array = da.where(newly_escaped, n, array)
+            mask = da.where(newly_escaped, False, mask)
+        
+        # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
+        array = da.where(mask, self.max_iter, array)
+
+        # compute to trigger lazy operations
+        return array.compute()
 
     
 if __name__ == "__main__":
