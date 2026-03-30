@@ -7,17 +7,18 @@ import dask.array as da
 class Mandelbrot:
 
     def __init__(self):
-        self.xmin = -2,
-        self.xmax = 1,
-        self.ymin = -1.5,
-        self.ymax = 1.5,
-        self.width = 1024,
-        self.height = 1024,
+        self.xmin = -2
+        self.xmax = 1
+        self.ymin = -1.5
+        self.ymax = 1.5
+        self.width = 1024
+        self.height = 1024
         self.x_values = np.linspace(self.xmin, self.xmax, self.width)
         self.y_values = np.linspace(self.ymin, self.ymax, self.height)
         self.array = np.zeros((self.height, self.width), dtype=int)
+        self.max_iter = 100
     
-    def mandlebrot_naive(self):
+    def naive(self):
         array = self.array
         for i in range(self.height):
             for j in range(self.width):
@@ -44,7 +45,7 @@ class Mandelbrot:
                     array[i, j] = self.max_iter
         return array
     
-    def mandlebrot_vectorized(self):
+    def vectorized(self):
         
         array = self.array
         # 3. For each point c in grid (perform operation on each element in array):
@@ -75,7 +76,7 @@ class Mandelbrot:
         return array
     
     @njit
-    def mandlebrot_njit(self):
+    def njit(self):
         array = self.array
         for i in range(self.height):
             for j in range(self.width):
@@ -102,11 +103,11 @@ class Mandelbrot:
                     array[i, j] = self.max_iter
         return array
     
-    def mandelbroot_paralel(self):
+    def paralel(self):
         print('not implemented')
         return None
 
-    def mandelbroot_dask(self):
+    def dask(self):
         
         array = self.array
         # 3. For each point c in grid (perform operation on each element in array):
