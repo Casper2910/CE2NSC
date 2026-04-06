@@ -65,9 +65,8 @@ class Mandelbrot:
         return array.compute()
 
 
-# Connect once — reused across all sizes and repeats
-client = Client("tcp://172.30.54.140:8786")
-print(client)  # confirm workers are connected
+client = Client("tcp://10.92.0.112:8786")
+print(client)
 
 for size in test_sizes:
 
