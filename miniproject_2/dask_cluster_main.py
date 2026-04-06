@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from dask.distributed import Client
 import dask.array as da
+import distributed
 
 test_sizes = [1024, 2048, 4096, 8192]
 
@@ -30,25 +31,20 @@ class Mandelbrot:
 
         # 3. For each point c in grid (perform operation on each element in array):
         # note to self: 1j is imaginary unit in python
-        c = x_values[None, :] + 1j * y_values[:, None]
+        x_da = da.from_array(x_values, chunks=128)
+        y_da = da.from_array(y_values, chunks=128)
+        c = x_da[None, :] + 1j * y_da[:, None]
 
         # > Initialize z0 = 0 (for all points)
-        z = np.zeros_like(c)
-        array = np.zeros(c.shape, dtype=int)
+        z     = da.zeros_like(c)
+        array = da.zeros(c.shape, dtype=int, chunks=c.chunks)
 
         # mask to keep track on updated indexes
-        mask = np.ones(c.shape, dtype=bool)
+        mask  = da.ones(c.shape, dtype=bool, chunks=c.chunks)
 
-        # Convert to dask arrays — chunks are distributed across cluster workers
-        chunk = 'auto'
-        z     = da.from_array(z,     chunks=chunk)
-        c     = da.from_array(c,     chunks=chunk)
-        array = da.from_array(array, chunks=chunk)
-        mask  = da.from_array(mask,  chunks=chunk)
-        
-        # reduce graph size for sending operations:
-        # constantly sends
-        c = client.persist(c)
+        # persist all arrays on the cluster upfront to avoid sending large graphs
+        c, z, array, mask = client.persist([c, z, array, mask])
+        distributed.wait([c, z, array, mask])
 
         # > For n=0 to max_iter:
         for n in range(max_iter):
@@ -61,6 +57,10 @@ class Mandelbrot:
             newly_escaped = escaped & mask
             array         = da.where(newly_escaped, n, array)
             mask          = mask & ~newly_escaped
+
+            # persist every iteration to keep the task graph small
+            z, array, mask = client.persist([z, array, mask])
+            distributed.wait([z, array, mask])
 
         # > If loop completes: Point is in set, store max_iter
         array = da.where(mask, max_iter, array)
