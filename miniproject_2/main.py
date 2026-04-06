@@ -5,6 +5,8 @@ import pandas as pd
 
 test_sizes = [1024, 2048, 4096, 8192]
 
+results = []
+
 for size in test_sizes:
     
     mandelbrot = Mandelbrot(width = size, height = size)
@@ -18,15 +20,18 @@ for size in test_sizes:
     results_parallel =   timeit.repeat(lambda: mandelbrot.parallel(), number=1, repeat=10)
     results_dask =      timeit.repeat(lambda: mandelbrot.dask(), number=1, repeat=10)
 
+    # save results
+    for name, time in [('naive', result_naive), 
+                        ('vector', results_vector), 
+                        ('njit', results_njit), 
+                        ('parallel', results_parallel), 
+                        ('dask', results_dask)]:
+            
+            results.append({'method': name, 'size': size, 'time': time})
 
-results = [('result_naive', result_naive, str(size)),
-           ('results_vector', results_vector, str(size)),
-           ('results_njit', results_njit, str(size)),
-           ('results_parallel', results_parallel, str(size)),
-           ('results_dask',results_dask, str(size))]
 
 # format to dataframe
-df = pd.DataFrame(results, columns=['method', 'time'])
+df = pd.DataFrame(results)
 
 # unnest time column
 df = df.explode('time')
