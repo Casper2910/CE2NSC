@@ -4,6 +4,7 @@ import dask
 from threading import Thread
 import dask.array as da
 from dask.distributed import Client
+import distributed
 
 class Mandelbrot:
 
@@ -207,57 +208,50 @@ class Mandelbrot:
         return array.compute()
 
 
-    def dask_distributed(self, scheduler_address="tcp://172.30.54.140"):
-        # Connect to the distributed cluster
-        client = Client(scheduler_address)
-
+    def dask_distributed(self, client):
         # loading variables
-        array = self.array
         x_values = self.x_values
         y_values = self.y_values
         max_iter = self.max_iter
-        height = self.height
-        width = self.width
-        array = self.array
 
         # 3. For each point c in grid (perform operation on each element in array):
         # note to self: 1j is imaginary unit in python
-        c = x_values[None, :] + 1j * y_values[:, None]
+        x_da = da.from_array(x_values, chunks=128)
+        y_da = da.from_array(y_values, chunks=128)
+        c = x_da[None, :] + 1j * y_da[:, None]
 
-        # > Initialize 𝑧0 = 0 (for all points)
-        z = np.zeros_like(c)
-        array = np.zeros(c.shape, dtype=int)
+        # > Initialize z0 = 0 (for all points)
+        z     = da.zeros_like(c)
+        array = da.zeros(c.shape, dtype=int, chunks=c.chunks)
 
         # mask to keep track on updated indexes
-        mask = np.ones(c.shape, dtype=bool)
+        mask  = da.ones(c.shape, dtype=bool, chunks=c.chunks)
 
-        # Convert to dask arrays — chunks are distributed across cluster workers
-        chunk = 'auto'
-        z     = da.from_array(z,     chunks=chunk)
-        c     = da.from_array(c,     chunks=chunk)
-        array = da.from_array(array, chunks=chunk)
-        mask  = da.from_array(mask,  chunks=chunk)
+        # persist all arrays on the cluster upfront to avoid sending large graphs
+        c, z, array, mask = client.persist([c, z, array, mask])
+        distributed.wait([c, z, array, mask])
 
-        # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
+        # > For n=0 to max_iter:
         for n in range(max_iter):
 
-            # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
+            # > Compute zn+1 = zn2 + c
             z = da.where(mask, z**2 + c, z)
 
-            # > If 𝑧𝑛+1 >2: Point escapes! Store 𝑛
+            # > If zn+1 > 2: Point escapes! Store n
             escaped       = da.abs(z) > 2
             newly_escaped = escaped & mask
             array         = da.where(newly_escaped, n, array)
             mask          = mask & ~newly_escaped
 
-        # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
+            # persist every iteration to keep the task graph small
+            z, array, mask = client.persist([z, array, mask])
+            distributed.wait([z, array, mask])
+
+        # > If loop completes: Point is in set, store max_iter
         array = da.where(mask, max_iter, array)
 
         # compute to trigger lazy operations across the cluster
-        result = array.compute()
-
-        client.close()
-        return result
+        return array.compute()
 
 # cant use self variables of class, standalone function:
 @njit

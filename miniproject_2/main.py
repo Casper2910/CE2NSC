@@ -19,13 +19,16 @@ for size in test_sizes:
     # Miniproject 2 implementations tests:
     results_parallel =   timeit.repeat(lambda: mandelbrot.parallel(), number=1, repeat=10)
     results_dask =      timeit.repeat(lambda: mandelbrot.dask(), number=1, repeat=10)
+    
+    results_dask_distributed = timeit.repeat(mandelbrot.dask_distributed(), number=1, repeat = 10)
 
     # save results
     for name, time in [('naive', result_naive), 
                         ('vector', results_vector), 
                         ('njit', results_njit), 
                         ('parallel', results_parallel), 
-                        ('dask', results_dask)]:
+                        ('dask', results_dask),
+                        ('dask_distributed', results_dask_distributed)]:
             
             results.append({'method': name, 'size': size, 'time': time})
 

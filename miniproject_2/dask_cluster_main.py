@@ -79,17 +79,27 @@ for size in test_sizes:
     # Warm up before timing
     mandelbrot.dask_distributed(client)
 
-    results_dask = timeit.repeat(lambda: mandelbrot.dask_distributed(client), number=1, repeat=10)
+    results_dask = timeit.repeat(lambda: mandelbrot.dask_distributed(client), number=1, repeat=2)
 
     results.append({'method': 'dask_distributed', 'size': size, 'time': results_dask})
+    
+    # format to dataframe
+    df = pd.DataFrame(results)
+
+    # unnest time column
+    df = df.explode('time')
+
+    # Save to CSV
+    df.to_csv(f'dask_distributed_results_{size}x{size}.csv', index=False)
+    
 
 client.close()
 
 # format to dataframe
-df = pd.DataFrame(results)
+# df = pd.DataFrame(results)
 
 # unnest time column
-df = df.explode('time')
+# df = df.explode('time')
 
 # Save to CSV
-df.to_csv('dask_distributed_results.csv', index=False)
+# df.to_csv('dask_distributed_results.csv', index=False)
