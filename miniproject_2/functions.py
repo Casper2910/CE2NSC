@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 import dask
-import threading
+from threading import Thread
 import dask.array as da
 
 class Mandelbrot:
@@ -19,19 +19,27 @@ class Mandelbrot:
         self.max_iter = 100
     
     def naive(self):
+        # loading variables
         array = self.array
-        for i in range(self.height):
-            for j in range(self.width):
+        x_values = self.x_values
+        y_values = self.y_values
+        max_iter = self.max_iter
+        height = self.height
+        width = self.width
+        array = self.array
+        
+        for i in range(height):
+            for j in range(width):
                 
                 # 3. For each point c in grid:
                 # note to self: 1j is imaginary unit in python
-                c = self.x_values[j] + 1j * self.y_values[i]
+                c = x_values[j] + 1j * y_values[i]
                 
                 # > Initialize 𝑧0 =0
                 z = 0
                 
                 # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
-                for n in range(self.max_iter):
+                for n in range(max_iter):
                     
                     # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
                     z = z**2 + c
@@ -42,15 +50,21 @@ class Mandelbrot:
                         break
                 else:
                     # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
-                    array[i, j] = self.max_iter
+                    array[i, j] = max_iter
         return array
     
     def vectorized(self):
-        
+        # loading variables
         array = self.array
+        x_values = self.x_values
+        y_values = self.y_values
+        max_iter = self.max_iter
+        height = self.height
+        width = self.width
+        
         # 3. For each point c in grid (perform operation on each element in array):
         # note to self: 1j is imaginary unit in python
-        c = self.x_values[None, :] + 1j * self.y_values[:, None]
+        c = x_values[None, :] + 1j * y_values[:, None]
         
         # > Initialize 𝑧0 = 0 (for all points) (complex256 to prevent overflow of z)
         z = np.zeros_like(c)
@@ -59,7 +73,7 @@ class Mandelbrot:
         mask = np.ones(c.shape, dtype=bool)
         
         # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
-        for n in range(self.max_iter):
+        for n in range(max_iter):
             
             # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
             z[mask] = z[mask]**2 + c[mask]
@@ -71,48 +85,96 @@ class Mandelbrot:
             mask[newly_escaped] = False
             
         # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
-        array[mask] = self.max_iter
+        array[mask] = max_iter
 
         return array
     
-    @njit
+    # wrapper:
     def njit(self):
-        array = self.array
-        for i in range(self.height):
-            for j in range(self.width):
-                
-                # 3. For each point c in grid:
-                # note to self: 1j is imaginary unit in python
-                c = self.x_values[j] + 1j * self.y_values[i]
-                
-                # > Initialize 𝑧0 =0
-                z = 0
-                
-                # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
-                for n in range(self.max_iter):
-                    
-                    # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
-                    z = z**2 + c
-                    
-                    # > If 𝑧𝑛+1 >2: Point escapes! Store 𝑛, break to next point
-                    if abs(z) > 2:
-                        array[i, j] = n
-                        break
-                else:
-                    # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
-                    array[i, j] = self.max_iter
-        return array
+        return njit(
+            self.array, self.x_values, self.y_values,
+            self.max_iter, self.height, self.width
+        )
     
-    def paralel(self):
-        print('not implemented')
-        return None
+    def parallel(self, num_threads=8):
+        # loading variables
+        array = self.array
+        x_values = self.x_values
+        y_values = self.y_values
+        max_iter = self.max_iter
+        height = self.height
+        width = self.width
+
+        # Worker function processes a block of rows in a vectorized way
+        def worker(start_row, end_row):
+            # 3. For each point c in grid (for the block of rows):
+            # note to self: 1j is imaginary unit in python
+            c = x_values[None, :] + 1j * y_values[start_row:end_row, None]
+            
+            # > Initialize z0 = 0 for all points in this block
+            z = np.zeros_like(c)
+            
+            # mask to track which points have not escaped
+            mask = np.ones(c.shape, dtype=bool)
+            
+            # local array to store iteration counts for this block
+            local = np.zeros(c.shape, dtype=int)
+
+            # > For n = 0 to max_iter
+            for n in range(max_iter):
+                # > Compute zn+1 = zn^2 + c (only for points that haven't escaped)
+                z[mask] = z[mask]**2 + c[mask]
+
+                # > Check which points escaped (abs(z) > 2)
+                escaped = np.abs(z) > 2
+                newly_escaped = escaped & mask
+
+                # > Store the iteration count for newly escaped points
+                local[newly_escaped] = n
+                
+                # > Update mask so escaped points are ignored in next iterations
+                mask[newly_escaped] = False
+
+            # > If loop completes: Point is in set, store max_iter
+            local[mask] = max_iter
+
+            # > Write back the block's results to the main array
+            array[start_row:end_row, :] = local
+
+        # Split rows among threads
+        threads = []
+        rows_per_thread = height // num_threads
+
+        for t in range(num_threads):
+            start = t * rows_per_thread
+            # last thread takes any remaining rows
+            end = (t + 1) * rows_per_thread if t != num_threads - 1 else height
+
+            # create and start thread
+            thread = Thread(target=worker, args=(start, end))
+            threads.append(thread)
+            thread.start()
+
+        # wait for all threads to finish
+        for thread in threads:
+            thread.join()
+
+        # > Return the full Mandelbrot array
+        return array
 
     def dask(self):
-        
+        # loading variables
         array = self.array
+        x_values = self.x_values
+        y_values = self.y_values
+        max_iter = self.max_iter
+        height = self.height
+        width = self.width
+        array = self.array
+        
         # 3. For each point c in grid (perform operation on each element in array):
         # note to self: 1j is imaginary unit in python
-        c = self.x_values[None, :] + 1j * self.y_values[:, None]
+        c = x_values[None, :] + 1j * y_values[:, None]
         
         # > Initialize 𝑧0 = 0 (for all points) (complex256 to prevent overflow of z)
         z = np.zeros_like(c)
@@ -126,7 +188,7 @@ class Mandelbrot:
         mask = da.from_array(mask, chunks='auto')
         
         # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
-        for n in range(self.max_iter):
+        for n in range(max_iter):
             
             # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
             z = da.where(mask, z**2 + c, z)
@@ -138,11 +200,38 @@ class Mandelbrot:
             mask = da.where(newly_escaped, False, mask)
         
         # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
-        array = da.where(mask, self.max_iter, array)
+        array = da.where(mask, max_iter, array)
 
         # compute to trigger lazy operations
         return array.compute()
-
+    
+# cant use self variables, standalone function:
+@njit
+def njit(array, x_values, y_values, max_iter, height, width):
+    for i in range(height):
+        for j in range(width):
+                
+                # 3. For each point c in grid:
+                # note to self: 1j is imaginary unit in python
+                c = x_values[j] + 1j * y_values[i]
+                
+                # > Initialize 𝑧0 =0
+                z = 0
+                
+                # > For 𝑛=0 to 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟:
+                for n in range(max_iter):
+                    
+                    # > Compute 𝑧𝑛+1 =𝑧𝑛2 +𝑐
+                    z = z**2 + c
+                    
+                    # > If 𝑧𝑛+1 >2: Point escapes! Store 𝑛, break to next point
+                    if abs(z) > 2:
+                        array[i, j] = n
+                        break
+                else:
+                    # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
+                    array[i, j] = max_iter
+        return array
     
 if __name__ == "__main__":
     m = Mandelbrot()
