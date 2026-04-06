@@ -45,6 +45,10 @@ class Mandelbrot:
         c     = da.from_array(c,     chunks=chunk)
         array = da.from_array(array, chunks=chunk)
         mask  = da.from_array(mask,  chunks=chunk)
+        
+        # reduce graph size for sending operations:
+        # constantly sends
+        c = client.persist(c)
 
         # > For n=0 to max_iter:
         for n in range(max_iter):
