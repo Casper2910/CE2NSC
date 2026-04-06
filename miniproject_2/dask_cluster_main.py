@@ -21,9 +21,6 @@ for size in test_sizes:
 
     mandelbrot = Mandelbrot(width=size, height=size)
 
-    # Warm up before timing
-    mandelbrot.dask_distributed(client)
-
     results_dask = timeit.repeat(lambda: mandelbrot.dask_distributed(client), number=1, repeat=3) # only 3 repeats
 
     results.append({'method': 'dask_distributed', 'size': size, 'time': results_dask})
