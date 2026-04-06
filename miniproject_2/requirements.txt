@@ -11,3 +11,4 @@ packaging==26.0
 partd==1.4.2
 PyYAML==6.0.3
 toolz==1.1.0
+pandas==2.3.3

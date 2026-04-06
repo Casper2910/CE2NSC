@@ -207,7 +207,7 @@ class Mandelbrot:
         return array.compute()
 
 
-    def dask_distributed(self, scheduler_address="tcp://localhost:8786"):
+    def dask_distributed(self, scheduler_address="tcp://172.30.54.140"):
         # Connect to the distributed cluster
         client = Client(scheduler_address)
 
