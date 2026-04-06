@@ -40,4 +40,4 @@ df = pd.DataFrame(results)
 df = df.explode('time')
 
 # Save to CSV
-df.to_csv('results.csv', index=False)
+df.to_csv('benchmarks.csv', index=False)

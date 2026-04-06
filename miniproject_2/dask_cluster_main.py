@@ -32,7 +32,7 @@ for size in test_sizes:
     df = df.explode('time')
 
     # Save to CSV
-    df.to_csv(f'dask_distributed_results_{size}x{size}.csv', index=False)
+    df.to_csv(f'dask_distributed_benchmarks_{size}x{size}.csv', index=False)
     
 
 client.close()
