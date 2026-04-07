@@ -1,0 +1,16 @@
+click==8.3.1
+cloudpickle==3.1.2
+dask==2026.3.0
+dask[distributed]==2026.3.0
+fsspec==2026.2.0
+llvmlite==0.46.0
+locket==1.0.0
+numba==0.64.0
+numpy==2.2.6
+packaging==26.0
+partd==1.4.2
+PyYAML==6.0.3
+toolz==1.1.0
+pandas==2.3.3
+cuda-pathfinder==1.5.2
+cupy-cuda12x==14.0.1
