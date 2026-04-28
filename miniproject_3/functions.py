@@ -329,3 +329,4 @@ def njit(array, x_values, y_values, max_iter, height, width):
     
 if __name__ == "__main__":
     m = Mandelbrot()
+    
