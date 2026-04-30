@@ -6,12 +6,11 @@ import os
 FILE_PATH = "benchmarks_home_pc.csv"
 OUTPUT_DIR = "plots"
 
-GROUP_COL = "name"     # e.g. algorithm / method
-X_COL = "size"         # e.g. input size
-VALUE_COL = "time"     # e.g. runtime
+GROUP_COL = "name"
+X_COL = "size"
+VALUE_COL = "time"
 
-AGGS = ["min", "mean", "max"]  # can change to any pandas agg funcs
-
+AGGS = ["min", "mean", "max"]
 # ----------------
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -27,48 +26,54 @@ df = df[
     df[VALUE_COL].notna()
 ]
 
-# Aggregate dynamically
+# Aggregate including max_iter
 stats = (
-    df.groupby([GROUP_COL, X_COL])[VALUE_COL]
+    df.groupby([GROUP_COL, X_COL, "max_iter"])[VALUE_COL]
     .agg(AGGS)
     .reset_index()
 )
 
-# Generic plotting function
-def plot_metric(metric):
+# ---- Plotting ----
+def plot_metric(metric, max_iter):
     plt.figure()
 
-    for group in stats[GROUP_COL].unique():
-        subset = stats[stats[GROUP_COL] == group]
+    subset_all = stats[stats["max_iter"] == max_iter]
+
+    for group in subset_all[GROUP_COL].unique():
+        subset = subset_all[subset_all[GROUP_COL] == group]
         plt.plot(subset[X_COL], subset[metric], marker="o", label=group)
 
     plt.xlabel(X_COL)
     plt.ylabel(f"{metric} {VALUE_COL}")
-    plt.title(f"{metric.capitalize()} {VALUE_COL}")
+    plt.title(f"{metric.capitalize()} {VALUE_COL} (max_iter={max_iter})")
     plt.legend()
-    plt.savefig(f"{OUTPUT_DIR}/{VALUE_COL}_{metric}.png", dpi=300)
+    plt.savefig(f"{OUTPUT_DIR}/{VALUE_COL}_{metric}_iter_{max_iter}.png", dpi=300)
     plt.close()
 
-# Generate all plots
-for metric in AGGS:
-    plot_metric(metric)
+# Generate plots per max_iter
+for max_iter in stats["max_iter"].unique():
+    for metric in AGGS:
+        plot_metric(metric, max_iter)
 
 # ---- Scaling analysis (log-log) ----
-plt.figure()
+for max_iter in stats["max_iter"].unique():
+    plt.figure()
 
-for group in stats[GROUP_COL].unique():
-    subset = stats[stats[GROUP_COL] == group].sort_values(X_COL)
+    subset_all = stats[stats["max_iter"] == max_iter]
 
-    plt.loglog(
-        subset[X_COL],
-        subset["mean"],
-        marker="o",
-        label=group
-    )
+    for group in subset_all[GROUP_COL].unique():
+        subset = subset_all[subset_all[GROUP_COL] == group].sort_values(X_COL)
 
-plt.xlabel(X_COL)
-plt.ylabel(f"mean {VALUE_COL}")
-plt.title("Scaling Analysis (log-log)")
-plt.legend()
-plt.savefig(f"{OUTPUT_DIR}/scaling_loglog.png", dpi=300)
-plt.close()
+        plt.loglog(
+            subset[X_COL],
+            subset["mean"],
+            marker="o",
+            label=group
+        )
+
+    plt.xlabel(X_COL)
+    plt.ylabel(f"mean {VALUE_COL}")
+    plt.title(f"Scaling Analysis (max_iter={max_iter})")
+    plt.legend()
+    plt.savefig(f"{OUTPUT_DIR}/scaling_loglog_iter_{max_iter}.png", dpi=300)
+    plt.close()

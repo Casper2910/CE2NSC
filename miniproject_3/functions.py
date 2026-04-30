@@ -1,5 +1,7 @@
 import numpy as np
 from numba import njit
+import numpy as np
+from numba import cuda
 
 class Mandelbrot:
 
@@ -386,6 +388,41 @@ class Mandelbrot:
 
         return array
 
+    def cuda_numba(self):
+        """
+        Compute the Mandelbrot set using Numba CUDA on GPU.
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
+        print('CUDA Numba:\n')
+
+        # allocate host data
+        x_values = self.x_values.astype(np.float64)
+        y_values = self.y_values.astype(np.float64)
+        array = np.zeros((self.height, self.width), dtype=np.int32)
+
+        # transfer to device
+        d_x = cuda.to_device(x_values)
+        d_y = cuda.to_device(y_values)
+        d_array = cuda.to_device(array)
+
+        # configure blocks/threads
+        threads_per_block = (16, 16)
+        blocks_per_grid_x = (self.height + threads_per_block[0] - 1) // threads_per_block[0]
+        blocks_per_grid_y = (self.width + threads_per_block[1] - 1) // threads_per_block[1]
+        blocks_per_grid = (blocks_per_grid_x, blocks_per_grid_y)
+
+        # launch kernel
+        mandelbrot_cuda_kernel[blocks_per_grid, threads_per_block](
+            d_array, d_x, d_y, self.max_iter
+        )
+
+        # copy result back
+        return d_array.copy_to_host()
+
 # cant use self variables of class, standalone function:
 @njit
 def njit(array, x_values, y_values, max_iter, height, width):
@@ -413,7 +450,33 @@ def njit(array, x_values, y_values, max_iter, height, width):
                     # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
                     array[i, j] = max_iter
         return array
+
+# on GP, standalone function:
+@cuda.jit
+def mandelbrot_cuda_kernel(array, x_values, y_values, max_iter):
+        """
+        CUDA kernel for computing the Mandelbrot set.
+
+        Each thread computes one pixel.
+        """
+        i, j = cuda.grid(2)
+
+        height, width = array.shape
+
+        if i < height and j < width:
+            c = x_values[j] + 1j * y_values[i]
+            z = 0.0 + 0.0j
+
+            for n in range(max_iter):
+                z = z * z + c
+                if (z.real * z.real + z.imag * z.imag) > 4.0:
+                    array[i, j] = n
+                    return
+
+            array[i, j] = max_iter
     
 if __name__ == "__main__":
     m = Mandelbrot()
+    
+    m.cuda_numba()
     
