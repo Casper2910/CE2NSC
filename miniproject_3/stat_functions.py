@@ -2,54 +2,73 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# Ensure output folder exists
-os.makedirs("plots", exist_ok=True)
+# ---- CONFIG ----
+FILE_PATH = "benchmarks_home_pc.csv"
+OUTPUT_DIR = "plots"
 
-# Load data
-df = pd.read_csv("benchmarks.csv")
+GROUP_COL = "name"     # e.g. algorithm / method
+X_COL = "size"         # e.g. input size
+VALUE_COL = "time"     # e.g. runtime
 
-# Aggregate stats
+AGGS = ["min", "mean", "max"]  # can change to any pandas agg funcs
+
+# ----------------
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+df = pd.read_csv(FILE_PATH, on_bad_lines="skip")
+
+df[VALUE_COL] = pd.to_numeric(df[VALUE_COL], errors="coerce")
+df[X_COL] = pd.to_numeric(df[X_COL], errors="coerce")
+
+df = df[
+    df[GROUP_COL].notna() &
+    df[X_COL].notna() &
+    df[VALUE_COL].notna()
+]
+
+# Aggregate dynamically
 stats = (
-    df.groupby(["method", "size"])["time"]
-    .agg(["mean", "min", "max"])
+    df.groupby([GROUP_COL, X_COL])[VALUE_COL]
+    .agg(AGGS)
     .reset_index()
 )
 
-# ---- Plot MIN ----
+# Generic plotting function
+def plot_metric(metric):
+    plt.figure()
+
+    for group in stats[GROUP_COL].unique():
+        subset = stats[stats[GROUP_COL] == group]
+        plt.plot(subset[X_COL], subset[metric], marker="o", label=group)
+
+    plt.xlabel(X_COL)
+    plt.ylabel(f"{metric} {VALUE_COL}")
+    plt.title(f"{metric.capitalize()} {VALUE_COL}")
+    plt.legend()
+    plt.savefig(f"{OUTPUT_DIR}/{VALUE_COL}_{metric}.png", dpi=300)
+    plt.close()
+
+# Generate all plots
+for metric in AGGS:
+    plot_metric(metric)
+
+# ---- Scaling analysis (log-log) ----
 plt.figure()
-for method in stats["method"].unique():
-    subset = stats[stats["method"] == method]
-    plt.plot(subset["size"], subset["min"], marker="o", label=method)
 
-plt.xlabel("Size")
-plt.ylabel("Min Time")
-plt.title("Min Runtime")
+for group in stats[GROUP_COL].unique():
+    subset = stats[stats[GROUP_COL] == group].sort_values(X_COL)
+
+    plt.loglog(
+        subset[X_COL],
+        subset["mean"],
+        marker="o",
+        label=group
+    )
+
+plt.xlabel(X_COL)
+plt.ylabel(f"mean {VALUE_COL}")
+plt.title("Scaling Analysis (log-log)")
 plt.legend()
-plt.savefig("plots/performance_min.png", dpi=300)
-plt.close()
-
-# ---- Plot MEAN ----
-plt.figure()
-for method in stats["method"].unique():
-    subset = stats[stats["method"] == method]
-    plt.plot(subset["size"], subset["mean"], marker="o", label=method)
-
-plt.xlabel("Size")
-plt.ylabel("Mean Time")
-plt.title("Mean Runtime")
-plt.legend()
-plt.savefig("plots/performance_mean.png", dpi=300)
-plt.close()
-
-# ---- Plot MAX ----
-plt.figure()
-for method in stats["method"].unique():
-    subset = stats[stats["method"] == method]
-    plt.plot(subset["size"], subset["max"], marker="o", label=method)
-
-plt.xlabel("Size")
-plt.ylabel("Max Time")
-plt.title("Max Runtime")
-plt.legend()
-plt.savefig("plots/performance_max.png", dpi=300)
+plt.savefig(f"{OUTPUT_DIR}/scaling_loglog.png", dpi=300)
 plt.close()
