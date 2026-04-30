@@ -4,6 +4,26 @@ from numba import njit
 class Mandelbrot:
 
     def __init__(self, xmin = -2, xmax = 1, ymin = -1.5, ymax = 1.5, width = 1024, height = 1024, max_iter = 100):
+        """
+    Class for generating Mandelbrot set images using different computational strategies.
+
+    Parameters
+    ----------
+    xmin : float
+        Minimum real value.
+    xmax : float
+        Maximum real value.
+    ymin : float
+        Minimum imaginary value.
+    ymax : float
+        Maximum imaginary value.
+    width : int
+        Number of points along the x-axis.
+    height : int
+        Number of points along the y-axis.
+    max_iter : int
+        Maximum number of iterations for divergence.
+    """
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
@@ -16,6 +36,14 @@ class Mandelbrot:
         self.max_iter = max_iter
     
     def naive(self):
+        """
+        Compute the Mandelbrot set using a naive double for-loop.
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
         print('Naive:\n')
         # loading variables
         array = self.array
@@ -52,6 +80,14 @@ class Mandelbrot:
         return array
     
     def vectorized(self):
+        """
+        Compute the Mandelbrot set using NumPy vectorized operations.
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
         print('Vectorized:\n')
         # loading variables
         array = self.array
@@ -90,6 +126,15 @@ class Mandelbrot:
     
     # wrapper:
     def njit(self):
+        """
+        Compute the Mandelbrot set using a Numba JIT-compiled function.
+        Function out of scope as njit can't read variables from object self
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
         print('Njit:\n')
         return njit(
             self.array, self.x_values, self.y_values,
@@ -97,6 +142,19 @@ class Mandelbrot:
         )
     
     def parallel(self, num_threads=8):
+        """
+        Compute the Mandelbrot set using multithreading.
+
+        Parameters
+        ----------
+        num_threads : int, optional
+            Number of threads to use.
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
         from threading import Thread
         print('Parallel:\n')
         # loading variables
@@ -165,6 +223,14 @@ class Mandelbrot:
         return array
 
     def dask(self):
+        """
+        Compute the Mandelbrot set using Dask for parallel array processing.
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
         import dask.array as da
         print('Dask:\n')
         # loading variables
@@ -211,6 +277,19 @@ class Mandelbrot:
 
 
     def dask_distributed(self, client):
+        """
+        Compute the Mandelbrot set using Dask distributed across a cluster.
+
+        Parameters
+        ----------
+        client : dask.distributed.Client
+            Dask client connected to a cluster.
+
+        Returns
+        -------
+        np.ndarray
+            2D array with iteration counts for each point.
+        """
         import dask.array as da
         from dask.distributed import Client
         import distributed
@@ -260,6 +339,14 @@ class Mandelbrot:
         return array.compute()
     
     def cupy(self):
+        """
+        Compute the Mandelbrot set using CuPy on a GPU.
+
+        Returns
+        -------
+        cupy.ndarray
+            2D array with iteration counts for each point.
+        """
         import cupy as cp
         print('Cupy:\n')
         # loading variables
