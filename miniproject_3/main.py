@@ -42,7 +42,7 @@ for size in test_sizes:
         for name, time in test_runs: 
             # results.append({'method': name, 'size': size, 'time': time})
             
-            output_file = 'benchmarks_home_pc.csv'
+            output_file = 'benchmarks.csv'
 
             print(name, size, time, max_iter)
 

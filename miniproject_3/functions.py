@@ -137,10 +137,16 @@ class Mandelbrot:
         np.ndarray
             2D array with iteration counts for each point.
         """
+        array = self.array
+        x_values = self.x_values
+        y_values = self.y_values
+        max_iter = self.max_iter
+        height = self.height
+        width = self.width
         print('Njit:\n')
         return njit(
-            self.array, self.x_values, self.y_values,
-            self.max_iter, self.height, self.width
+            array, x_values, y_values,
+            max_iter, height, width
         )
     
     def parallel(self, num_threads=8):
@@ -449,7 +455,7 @@ def njit(array, x_values, y_values, max_iter, height, width):
                 else:
                     # > If loop completes: Point is in set, store 𝑚𝑎𝑥_𝑖𝑡𝑒𝑟
                     array[i, j] = max_iter
-        return array
+    return array
 
 # on GP, standalone function:
 @cuda.jit
@@ -474,7 +480,23 @@ def mandelbrot_cuda_kernel(array, x_values, y_values, max_iter):
                     return
 
             array[i, j] = max_iter
-    
+
+import matplotlib.pyplot as plt
+import os
+def plot_mandelbrot(array, size, max_iter, method, output_dir="mandelbrot_images"):
+    os.makedirs(output_dir, exist_ok=True)
+
+    plt.figure(figsize=(6, 6))
+
+    norm = array / max_iter  # normalize
+    plt.imshow(norm, cmap="hot", extent=[-2, 1, -1.5, 1.5])
+
+    plt.axis("off")
+
+    filename = f"{method}_size_{size}_iter_{max_iter}.png"
+    plt.savefig(os.path.join(output_dir, filename), dpi=200, bbox_inches="tight")
+    plt.close()
+
 if __name__ == "__main__":
     m = Mandelbrot()
     
