@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 # ---- CONFIG ----
-FILE_PATH = "new_new_benchmarks.csv"
+FILE_PATH = "benchmarks.csv"
 OUTPUT_DIR = "new_plots"
 
 GROUP_COL = "name"

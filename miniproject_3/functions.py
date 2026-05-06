@@ -144,7 +144,7 @@ class Mandelbrot:
         height = self.height
         width = self.width
         print('Njit:\n')
-        return njit(
+        return njit_kernal(
             array, x_values, y_values,
             max_iter, height, width
         )
@@ -431,7 +431,7 @@ class Mandelbrot:
 
 # cant use self variables of class, standalone function:
 @njit
-def njit(array, x_values, y_values, max_iter, height, width):
+def njit_kernal(array, x_values, y_values, max_iter, height, width):
     for i in range(height):
         for j in range(width):
                 
