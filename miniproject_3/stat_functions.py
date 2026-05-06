@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 
 # ---- CONFIG ----
 FILE_PATH = "benchmarks.csv"
@@ -16,6 +17,8 @@ AGGS = ["min", "mean", "max"]
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 df = pd.read_csv(FILE_PATH, on_bad_lines="skip")
+
+print(df[df['name'] == 'cupy'])
 
 df[VALUE_COL] = pd.to_numeric(df[VALUE_COL], errors="coerce")
 df[X_COL] = pd.to_numeric(df[X_COL], errors="coerce")
@@ -57,23 +60,20 @@ for max_iter in stats["max_iter"].unique():
 
 # ---- Scaling analysis (log-log) ----
 for max_iter in stats["max_iter"].unique():
-    plt.figure()
-
+    fig, ax = plt.subplots()
     subset_all = stats[stats["max_iter"] == max_iter]
-
     for group in subset_all[GROUP_COL].unique():
         subset = subset_all[subset_all[GROUP_COL] == group].sort_values(X_COL)
-
-        plt.loglog(
+        ax.loglog(
             subset[X_COL],
             subset["mean"],
             marker="o",
             label=group
         )
-
-    plt.xlabel(X_COL)
-    plt.ylabel(f"mean {VALUE_COL}")
-    plt.title(f"Scaling Analysis (max_iter={max_iter})")
-    plt.legend()
+    ax.set_xlabel(X_COL)
+    ax.set_ylabel(f"mean {VALUE_COL}")
+    ax.set_title(f"Scaling Analysis (max_iter={max_iter})")
+    ax.legend()
+    ax.grid(True, which="both", axis="both", linestyle="-", linewidth=0.8, color="black", alpha=0.3)
     plt.savefig(f"{OUTPUT_DIR}/scaling_loglog_iter_{max_iter}.png", dpi=300)
     plt.close()
