@@ -5,7 +5,7 @@ import numpy as np
 
 # ---- CONFIG ----
 FILE_PATH = "benchmarks.csv"
-OUTPUT_DIR = "new_plots"
+OUTPUT_DIR = "plots"
 
 GROUP_COL = "name"
 X_COL = "size"

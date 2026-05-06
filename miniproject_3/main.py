@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 import os
 
-test_sizes = [1024, 2048, 4096, 8192]
+test_sizes = [1024, 2048, 4096, 8192, 8192*2]
 
-max_iters = [100, 200, 300, 400]
+max_iters = [100, 200, 300, 400, 500, 600]
 
 for size in test_sizes:
     for max_iter in max_iters:
@@ -21,11 +21,11 @@ for size in test_sizes:
 
         # Miniproject 1 implementations tests:
         #('naive',        timeit.repeat(lambda: mandelbrot.naive(), number=1, repeat=10)),
-        ('vectorized',      timeit.repeat(lambda: mandelbrot.vectorized(), number=1, repeat=10)),
+        #('vectorized',      timeit.repeat(lambda: mandelbrot.vectorized(), number=1, repeat=10)),
         ('njit',        timeit.repeat(lambda: mandelbrot.njit(), number=1, repeat=10)),
 
         # Miniproject 2 implementations tests:
-        ('parallel',    timeit.repeat(lambda: mandelbrot.parallel(), number=1, repeat=10)),
+        #('parallel',    timeit.repeat(lambda: mandelbrot.parallel(), number=1, repeat=10)),
         #('dask',        timeit.repeat(lambda: mandelbrot.dask(), number=1, repeat=10)),
 
         # ('results_dask_distributed', timeit.repeat(mandelbrot.dask_distributed(), number=1, repeat = 10))
